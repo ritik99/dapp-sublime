@@ -2,6 +2,7 @@
 @openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/
 @openzeppelin/contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/contracts/
 @uniswap/v2-core=lib/uniswap-v2-core/
+@chainlink/=lib/chainlink/
 @uniswap/lib/=lib/uniswap-lib/
 radicle-contracts/=lib/radicle-contracts/contracts/
 ds-test/=lib/ds-test/src/

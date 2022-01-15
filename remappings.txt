@@ -1,10 +1,6 @@
 @ensdomains/=./lib/
-@openzeppelin/contracts/math/=lib/openzeppelin-contracts/contracts/utils/math/
-@openzeppelin/contracts/token/ERC20/SafeERC20.sol=lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol
-@openzeppelin/contracts/utils/ReentrancyGuard.sol=lib/openzeppelin-contracts/contracts/security/ReentrancyGuard.sol
-@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol=lib/openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol
-@openzeppelin/contracts-upgradeable/proxy/Initializable.sol=lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol
-@openzeppelin/contracts-upgradeable/token/ERC20/ERC20PausableUpgradeable.sol=lib/openzeppelin-contracts-upgradeable/contracts/token/ERC20/extensions/ERC20PausableUpgradeable.sol
+@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/
+@openzeppelin/contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/contracts/
 @uniswap/v2-core=lib/uniswap-v2-core/
 @uniswap/lib/=lib/uniswap-lib/
 radicle-contracts/=lib/radicle-contracts/contracts/

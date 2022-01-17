@@ -21,7 +21,7 @@
     "deployEnv:kovan": "npx hardhat test test/templateProxyDelegate.ts --network kovan",
     "removeSolidityLogs": "npx hardhat remove-logs",
     "checksize": "npx hardhat size-contracts",
-    "clean":"npx hardhat clean"
+    "clean": "npx hardhat clean"
   },
   "repository": {
     "type": "git",
@@ -59,7 +59,7 @@
     "ethereum-waffle": "^3.3.0",
     "ethereumjs-wallet": "^1.0.1",
     "ethers": "^5.4.1",
-    "hardhat": "^2.4.3",
+    "hardhat": "^2.8.2",
     "hardhat-contract-sizer": "^2.1.1",
     "hardhat-deploy": "^0.7.5",
     "hardhat-log-remover": "^2.0.2",

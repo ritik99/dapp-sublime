@@ -585,13 +585,13 @@ contract CreditLine is ReentrancyGuard, OwnableUpgradeable {
     function accept(uint256 _id) external {
         require(
             creditLineVariables[_id].status == CreditLineStatus.REQUESTED,
-            'CreditLine::acceptCreditLineLender - CreditLine is already accepted'
+            'CreditLine already accepted'
         );
         bool _requestByLender = creditLineConstants[_id].requestByLender;
         require(
             (msg.sender == creditLineConstants[_id].borrower && _requestByLender) ||
                 (msg.sender == creditLineConstants[_id].lender && !_requestByLender),
-            "Only Borrower or Lender who hasn't requested can accept"
+            "Invalid msg sender"
         );
         creditLineVariables[_id].status = CreditLineStatus.ACTIVE;
         emit CreditLineAccepted(_id);
@@ -625,14 +625,14 @@ contract CreditLine is ReentrancyGuard, OwnableUpgradeable {
         address _strategy,
         bool _fromSavingsAccount
     ) internal {
-        require(creditLineConstants[_id].lender != msg.sender, 'lender cant deposit collateral');
+        require(creditLineConstants[_id].lender != msg.sender, 'Lender cant deposit collateral');
         if (_fromSavingsAccount) {
             _depositCollateralFromSavingsAccount(_id, _amount, msg.sender);
         } else {
             address _collateralAsset = creditLineConstants[_id].collateralAsset;
             ISavingsAccount _savingsAccount = ISavingsAccount(savingsAccount);
             if (_collateralAsset == address(0)) {
-                require(msg.value == _amount, "CreditLine::_depositCollateral - value to transfer doesn't match argument");
+                require(msg.value == _amount, "Value to transfer doesn't match argument");
             } else {
                 IERC20(_collateralAsset).safeTransferFrom(msg.sender, address(this), _amount);
                 IERC20(_collateralAsset).approve(_strategy, _amount);
@@ -680,9 +680,9 @@ contract CreditLine is ReentrancyGuard, OwnableUpgradeable {
      * @param _amount amount of tokens to borrow
      */
     function borrow(uint256 _id, uint256 _amount) external payable nonReentrant onlyCreditLineBorrower(_id) {
-        require(creditLineVariables[_id].status == CreditLineStatus.ACTIVE, 'CreditLine: The credit line is not yet active.');
+        require(creditLineVariables[_id].status == CreditLineStatus.ACTIVE, 'Credit line is inactive');
         uint256 _currentDebt = calculateCurrentDebt(_id);
-        require(_currentDebt.add(_amount) <= creditLineConstants[_id].borrowLimit, 'CreditLine: Amount exceeds borrow limit.');
+        require(_currentDebt.add(_amount) <= creditLineConstants[_id].borrowLimit, 'Amount exceeds borrow limit.');
         (uint256 _ratioOfPrices, uint256 _decimals) = IPriceOracle(priceOracle).getLatestPrice(
             creditLineConstants[_id].collateralAsset,
             creditLineConstants[_id].borrowAsset
@@ -695,7 +695,7 @@ contract CreditLine is ReentrancyGuard, OwnableUpgradeable {
         );
         require(
             _collateralRatioIfAmountIsWithdrawn >= creditLineConstants[_id].idealCollateralRatio,
-            "CreditLine::borrow - The current collateral ratio doesn't allow to withdraw the amount"
+            "Insufficient collateral"
         );
         address _borrowAsset = creditLineConstants[_id].borrowAsset;
         address _lender = creditLineConstants[_id].lender;
@@ -762,7 +762,7 @@ contract CreditLine is ReentrancyGuard, OwnableUpgradeable {
                 return;
             }
         }
-        revert('CreditLine::_repayFromSavingsAccount - Insufficient balance');
+        revert('Insufficient balance');
     }
 
     function _repay(
@@ -777,9 +777,9 @@ contract CreditLine is ReentrancyGuard, OwnableUpgradeable {
         address _lender = creditLineConstants[_id].lender;
         if (!_fromSavingsAccount) {
             if (_borrowAsset == address(0)) {
-                require(msg.value >= _amount, 'creditLine::repay - value should be eq or more than repay amount');
+                require(msg.value >= _amount, 'Incorrect repay amount');
                 (bool success, ) = payable(msg.sender).call{value: msg.value.sub(_amount)}(''); // transfer the remaining amount
-                require(success, 'creditLine::repay - remainig value transfered successfully');
+                require(success, 'Transfer successful');
                 _savingsAccount.deposit{value: _amount}(_amount, _borrowAsset, _defaultStrategy, _lender);
             } else {
                 IERC20(_borrowAsset).safeTransferFrom(msg.sender, address(this), _amount);
@@ -807,7 +807,7 @@ contract CreditLine is ReentrancyGuard, OwnableUpgradeable {
         uint256 _amount,
         bool _fromSavingsAccount
     ) external payable nonReentrant {
-        require(creditLineVariables[_id].status == CreditLineStatus.ACTIVE, 'CreditLine: The credit line is not yet active.');
+        require(creditLineVariables[_id].status == CreditLineStatus.ACTIVE, 'Credit line is inactive');
         require(creditLineConstants[_id].lender != msg.sender, 'Lender cant repay');
 
         uint256 _interestSincePrincipalUpdate = calculateInterestAccrued(_id);
@@ -856,11 +856,11 @@ contract CreditLine is ReentrancyGuard, OwnableUpgradeable {
     function close(uint256 _id) external ifCreditLineExists(_id) {
         require(
             msg.sender == creditLineConstants[_id].borrower || msg.sender == creditLineConstants[_id].lender,
-            'CreditLine: Permission denied while closing Line of credit'
+            'Permission denied'
         );
-        require(creditLineVariables[_id].status == CreditLineStatus.ACTIVE, 'CreditLine: Credit line should be active.');
-        require(creditLineVariables[_id].principal == 0, 'CreditLine: Cannot be closed since not repaid.');
-        require(creditLineVariables[_id].interestAccruedTillLastPrincipalUpdate == 0, 'CreditLine: Cannot be closed since not repaid.');
+        require(creditLineVariables[_id].status == CreditLineStatus.ACTIVE, 'Credit line is inactive');
+        require(creditLineVariables[_id].principal == 0, 'unpaid debt');
+        require(creditLineVariables[_id].interestAccruedTillLastPrincipalUpdate == 0, 'unpaid debt');
         creditLineVariables[_id].status = CreditLineStatus.CLOSED;
         emit CreditLineClosed(_id);
     }
